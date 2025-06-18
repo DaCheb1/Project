@@ -16,7 +16,7 @@
             {% endif %}
 
 
-            <h2>{{ product.title }}</h2>
+            <a href="{% url 'catalog_detail' product.id %}"><h2>{{ product.title }}</h2></a>
             <h3>{{ product.price }} ₽</h3>
         </article>
         {% endfor %}

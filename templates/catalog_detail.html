@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="title_product">
+        {{ product.title }}
+    </h1>
+    <div class="product_info">
+        {% if product.image %}         
+                <img src="{{ product.image.url }}" alt="">
+                {% else %}
+                    <div class =  'cover-image'> 
+                        Нет изображения
+                    </div>                                           
+            {% endif %}
+        <a href=""><img src="{{product.manufacturer.logo.url}}" alt=""></a>
+        <h3>
+            {{ product.price }} ₽
+        </h3>
+        <p>
+            {{ product.desc }}
+        </p>
+        <h3>
+            Страна производитель: {{ product.country }}
+        </h3>
+
+    </div>
+
+{% endblock %}

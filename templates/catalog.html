@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class =  'container-catalog'> 
+        {% for product in products %}
+        <article>
+            {% if product.image %}
+            
+                <img src="{{ product.image.url }}" alt="">
+                {% else %}
+                    <div class =  'cover-image'> 
+                        Нет изображения
+                    </div>
+                        
+                    
+            {% endif %}
+
+
+            <h2>{{ product.title }}</h2>
+            <h3>{{ product.price }} ₽</h3>
+        </article>
+        {% endfor %}
+    </div>
+{% endblock %}

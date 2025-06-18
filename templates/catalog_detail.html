@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block content %}
     <h1 class="title_product">
         {{ product.title }}
@@ -22,7 +21,13 @@
         <h3>
             Страна производитель: {{ product.country }}
         </h3>
-
+        <div class = "Charsblock">
+            {% for label, value in product.chars.items %}
+            <h4>
+                {{ label }}: {{ value }}
+            </h4>
+            {% endfor %}
+        </div>
     </div>
 
 {% endblock %}

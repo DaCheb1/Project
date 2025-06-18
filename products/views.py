@@ -1,8 +1,13 @@
 from django.shortcuts import render
-from products.models import Product
+from products.models import Product, Category
 def catalog (request):
-    products = Product.objects.all()
-    return render(request, 'catalog.html', {'products': products})
+    category = request.GET.get('category')
+    if category:
+        products = Product.objects.filter(category = category)
+    else:
+        products = Product.objects.all()
+    categories = Category.objects.all()
+    return render(request, 'catalog.html', {'products': products, 'categories': categories, 'select_category': category})
 
 def catalog_detail (request, pk):
     product = Product.objects.get(pk = pk)

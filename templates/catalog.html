@@ -2,6 +2,15 @@
 
 {% block content %}
     <div class =  'container-catalog'> 
+        <form method="get">
+            <label for="category"></label>
+            <select name="category" id="category">
+                {% for option in categories %}
+                    <option value="{{ option.id }}" {% if select_category == option.id %} selected{% endif %}>{{ option.title }}</option>
+                {% endfor %}
+            </select>
+            <input type="submit" value="Применить">
+        </form>
         {% for product in products %}
         <article>
             {% if product.image %}

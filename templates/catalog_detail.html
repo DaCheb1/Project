@@ -12,6 +12,11 @@
                     </div>                                           
             {% endif %}
         <a href=""><img src="{{product.manufacturer.logo.url}}" alt=""></a>
+        <form action="{% url 'push_basket' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="product" value = '{{ product.id }}'>
+            <input type="submit" value="Добавить в корзину">
+        </form>
         <h3>
             {{ product.price }} ₽
         </h3>
@@ -29,5 +34,6 @@
             {% endfor %}
         </div>
     </div>
+
 
 {% endblock %}

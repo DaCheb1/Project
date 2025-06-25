@@ -1,5 +1,7 @@
 from django.db import models
-
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 class Category (models.Model):
     title = models.CharField('Название', max_length=60)
 
@@ -40,3 +42,21 @@ class Product (models.Model):
         verbose_name = "Товар"
         verbose_name_plural = "Товары"
 
+class Basket(models.Model):
+    user = models.OneToOneField(User, verbose_name='Владелец корзины', related_name='basket', on_delete=models.CASCADE)
+    products = models.ManyToManyField(Product, verbose_name='Товары', related_name='baskets')
+    
+    def __str__(self):
+        return self.user.username
+    
+    class Meta:
+        verbose_name = "Корзина"
+        verbose_name_plural = "Корзины"
+
+@receiver(post_save, sender=User)
+def create_user_basket(sender, instance, created, **kwargs):
+    if created:
+        Basket.objects.create(user=instance)
+@receiver(post_save,sender=User)
+def save_user_basket(sender, instance, **kwargs):
+    instance.basket.save()

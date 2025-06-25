@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class = 'account_container'>
+        <h1>
+            Личный кабинет
+        </h1>
+        <h2>
+            Логин:
+            {{ user.username }}
+        </h2>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <input type="submit" value="Выйти">
+        </form>
+        
+    </div>
+{% endblock %}

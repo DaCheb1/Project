@@ -2,6 +2,10 @@ from django.shortcuts import render
 from products.models import Product, Category
 def catalog (request):
     category = request.GET.get('category')
+
+    if category:
+        category = int(category)
+
     if category:
         products = Product.objects.filter(category = category)
     else:

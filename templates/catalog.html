@@ -6,7 +6,9 @@
             <label for="category"></label>
             <select name="category" id="category">
                 {% for option in categories %}
-                    <option value="{{ option.id }}" {% if select_category == option.id %} selected{% endif %}>{{ option.title }}</option>
+                    <option value="{{ option.id }}" {% if option.id == select_category %}selected{% endif %}>
+                        {{ option.title }}
+                    </option>
                 {% endfor %}
             </select>
             <input type="submit" value="Применить">

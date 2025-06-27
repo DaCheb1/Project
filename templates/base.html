@@ -1,34 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Магазин Электроник</title>
-    <link rel="stylesheet" href="/static/base.css">
+    <title>Магазин электроник</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="header-box" role="banner" aria-label="Название магазина">
-      Магазин электроник
-    </div>
-     <div class="block" role="region" aria-label="Блок 1">
-      {% if user.is_authenticated %}
-      <a href="{% url 'account' %}"><h2>Личный кабинет</h2></a>
-      {% else %}
-      <a href="{% url 'login' %}">Войти</a>
-      <a href="{% url 'register' %}">Регистрация</a>
-      {% endif %}
-      
-        
-    </div>
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="logo">Магазин электроник</div>
+        <div class="nav-links">
+            <a href="{% url 'catalog' %}" class="nav-link {% if request.path == '/catalog/' %}active{% endif %}">Каталог</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'account' %}" class="nav-link {% if request.path == '/account/' %}active{% endif %}">Личный кабинет</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="nav-link {% if request.path == '/login/' %}active{% endif %}">Войти</a>
+            {% endif %}
+            <a href="{% url 'basket' %}" class="nav-link {% if request.path == '/basket/' %}active{% endif %}">Корзина</a>
+        </div>
+    </nav>
 
-    <div class="block" role="region" aria-label="Блок 2">
-      <a href="{% url 'basket' %}"><h2>Корзина</h2></a>       
-    </div>
-
-    <div class="block" role="region" aria-label="Блок 3">
-      <a href="{% url 'catalog' %}"><h2>Каталог</h2></a>
-        
-    </div>
-    {% block content %}{% endblock %}
+    <!-- Основное содержимое -->
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
 </body>
 </html>

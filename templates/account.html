@@ -1,18 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class = 'account_container'>
-        <h1>
-            Личный кабинет
-        </h1>
-        <h2>
-            Логин:
-            {{ user.username }}
-        </h2>
+    <div class="auth-form">
+        <h1 class="form-title">Личный кабинет</h1>
+        
+        <div class="form-group">
+            <p><strong>Логин:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+        
         <form action="{% url 'logout' %}" method="post">
             {% csrf_token %}
-            <input type="submit" value="Выйти">
+            <button type="submit" class="btn">Выйти</button>
         </form>
-        
     </div>
 {% endblock %}

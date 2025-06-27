@@ -1,14 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class = 'container-form'>
+    <div class="auth-form">
+        <h1 class="form-title">Регистрация</h1>
+        
         <form method="post">
-            <h1>
-                Регистрация
-            </h1>
             {% csrf_token %}
-            {{ form }}
-            <input type="submit" value="Зарегистрироваться">
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.errors %}
+                <div style="color: red; margin-top: 5px;">
+                    {{ field.errors }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn">Зарегистрироваться</button>
         </form>
     </div>
 {% endblock %}

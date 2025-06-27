@@ -1,21 +1,41 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class =  'container-catalog'> 
+    <h1>Корзина</h1>
+    
+    {% if products %}
+    <div class="product-list">
         {% for product in products %}
-        <article>
-            {% if product.image %}          
-                <img src="{{ product.image.url }}" alt="">
-                {% else %}
-                    <div class =  'cover-image'> 
-                        Нет изображения
-                    </div>                    
+        <div class="product-card">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+            {% else %}
+                <div class="product-image" style="background: #eee; display: flex; align-items: center; justify-content: center;">
+                    Нет изображения
+                </div>
             {% endif %}
-
-
-            <a href="{% url 'catalog_detail' product.id %}"><h2>{{ product.title }}</h2></a>
-            <h3>{{ product.price }} ₽</h3>
-        </article>
+            
+            <div class="product-info">
+                <h3 class="product-title">{{ product.title }}</h3>
+                <p class="product-price">{{ product.price }} ₽</p>
+                <form action="{% url 'remove_from_basket' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <button type="submit" class="btn" style="background: #dc3545;">Удалить</button>
+                </form>
+            </div>
+        </div>
         {% endfor %}
     </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <h2>Итого: {{ total_price }} ₽</h2>
+        <a href="{% url 'catalog' %}" class="btn" style="max-width: 300px; margin: 20px auto; display: inline-block;">Продолжить покупки</a>
+    </div>
+    {% else %}
+    <div style="text-align: center; margin-top: 50px;">
+        <p>Ваша корзина пуста</p>
+        <a href="{% url 'catalog' %}" class="btn" style="max-width: 300px; margin: 20px auto;">Перейти в каталог</a>
+    </div>
+    {% endif %}
 {% endblock %}

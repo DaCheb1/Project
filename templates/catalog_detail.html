@@ -1,39 +1,39 @@
 {% extends 'base.html' %}
+
 {% block content %}
-    <h1 class="title_product">
-        {{ product.title }}
-    </h1>
-    <div class="product_info">
-        {% if product.image %}         
-                <img src="{{ product.image.url }}" alt="">
-                {% else %}
-                    <div class =  'cover-image'> 
-                        Нет изображения
-                    </div>                                           
+    <div class="product-card" style="max-width: 800px; margin: 0 auto;">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+        {% else %}
+            <div class="product-image" style="background: #eee; display: flex; align-items: center; justify-content: center;">
+                Нет изображения
+            </div>
+        {% endif %}
+        
+        <div class="product-info">
+            <h1 class="product-title">{{ product.title }}</h1>
+            <p class="product-price">{{ product.price }} ₽</p>
+            
+            {% if product.manufacturer.logo %}
+                <img src="{{ product.manufacturer.logo.url }}" alt="{{ product.manufacturer.name }}" style="max-width: 150px; margin: 20px 0;">
             {% endif %}
-        <a href=""><img src="{{product.manufacturer.logo.url}}" alt=""></a>
-        <form action="{% url 'push_basket' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="product" value = '{{ product.id }}'>
-            <input type="submit" value="Добавить в корзину">
-        </form>
-        <h3>
-            {{ product.price }} ₽
-        </h3>
-        <p>
-            {{ product.desc }}
-        </p>
-        <h3>
-            Страна производитель: {{ product.country }}
-        </h3>
-        <div class = "Charsblock">
-            {% for label, value in product.chars.items %}
-            <h4>
-                {{ label }}: {{ value }}
-            </h4>
-            {% endfor %}
+            
+            <p>{{ product.desc }}</p>
+            
+            <div style="margin: 20px 0;">
+                <h3>Характеристики:</h3>
+                <ul style="list-style: none;">
+                    {% for label, value in product.chars.items %}
+                    <li><strong>{{ label }}:</strong> {{ value }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <form action="{% url 'push_basket' %}" method="post" style="margin-top: 30px;">
+                {% csrf_token %}
+                <input type="hidden" name="product" value="{{ product.id }}">
+                <button type="submit" class="btn">Добавить в корзину</button>
+            </form>
         </div>
     </div>
-
-
 {% endblock %}

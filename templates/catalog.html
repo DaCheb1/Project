@@ -1,35 +1,25 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class =  'container-catalog'> 
-        <form method="get">
-            <label for="category"></label>
-            <select name="category" id="category">
-                {% for option in categories %}
-                    <option value="{{ option.id }}" {% if option.id == select_category %}selected{% endif %}>
-                        {{ option.title }}
-                    </option>
-                {% endfor %}
-            </select>
-            <input type="submit" value="Применить">
-        </form>
+    <h1>Каталог товаров</h1>
+    
+    <div class="product-list">
         {% for product in products %}
-        <article>
+        <div class="product-card">
             {% if product.image %}
-            
-                <img src="{{ product.image.url }}" alt="">
-                {% else %}
-                    <div class =  'cover-image'> 
-                        Нет изображения
-                    </div>
-                        
-                    
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+            {% else %}
+                <div class="product-image" style="background: #eee; display: flex; align-items: center; justify-content: center;">
+                    Нет изображения
+                </div>
             {% endif %}
-
-
-            <a href="{% url 'catalog_detail' product.id %}"><h2>{{ product.title }}</h2></a>
-            <h3>{{ product.price }} ₽</h3>
-        </article>
+            
+            <div class="product-info">
+                <h3 class="product-title">{{ product.title }}</h3>
+                <p class="product-price">{{ product.price }} ₽</p>
+                <a href="{% url 'catalog_detail' product.id %}" class="btn">Подробнее</a>
+            </div>
+        </div>
         {% endfor %}
     </div>
 {% endblock %}

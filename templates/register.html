@@ -2,22 +2,61 @@
 
 {% block content %}
     <div class="auth-form">
-        <h1 class="form-title">Регистрация</h1>
+        <h1 class="form-title">Создать аккаунт</h1>
+        
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-circle">1</div>
+                <div class="step-label">Данные</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">2</div>
+                <div class="step-label">Подтверждение</div>
+            </div>
+        </div>
         
         <form method="post">
             {% csrf_token %}
+            
             {% for field in form %}
             <div class="form-group">
-                {{ field.label_tag }}
+                <label for="{{ field.id_for_label }}">
+                    {% if field.name == 'username' %}
+                        <i class="fas fa-user"></i> Имя пользователя
+                    {% elif field.name == 'password1' %}
+                        <i class="fas fa-lock"></i> Пароль
+                    {% elif field.name == 'password2' %}
+                        <i class="fas fa-lock"></i> Подтверждение пароля
+                    {% else %}
+                        {{ field.label }}
+                    {% endif %}
+                </label>
+                
                 {{ field }}
+                
+                {% if field.help_text %}
+                <small style="color: var(--text-light); font-size: 12px; margin-top: 5px; display: block; line-height: 1.4;">
+                    <i class="fas fa-info-circle"></i> {{ field.help_text }}
+                </small>
+                {% endif %}
+                
                 {% if field.errors %}
-                <div style="color: red; margin-top: 5px;">
-                    {{ field.errors }}
-                </div>
+                <ul class="errorlist">
+                    {% for error in field.errors %}
+                    <li><i class="fas fa-exclamation-circle"></i> {{ error }}</li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
             </div>
             {% endfor %}
-            <button type="submit" class="btn">Зарегистрироваться</button>
+            
+            <button type="submit" class="btn-form">
+                <i class="fas fa-user-plus"></i> Создать аккаунт
+            </button>
+            
+            <div class="form-links">
+                Уже есть аккаунт? <a href="{% url 'login' %}">Войти</a>
+            </div>
         </form>
     </div>
 {% endblock %}

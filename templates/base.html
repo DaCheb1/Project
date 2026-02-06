@@ -5,25 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Магазин электроник</title>
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Навигационная панель -->
     <nav class="navbar">
-        <div class="logo">Магазин электроник</div>
+        <div class="logo">
+            <i class="fas fa-bolt"></i>
+            <span>Магазин электроник</span>
+        </div>
         <div class="nav-links">
-            <a href="{% url 'catalog' %}" class="nav-link {% if request.path == '/catalog/' %}active{% endif %}">Каталог</a>
+            <a href="{% url 'catalog' %}" class="nav-link {% if request.path == '/catalog/' %}active{% endif %}">
+                <i class="fas fa-th-list"></i> Каталог
+            </a>
             {% if user.is_authenticated %}
-                <a href="{% url 'account' %}" class="nav-link {% if request.path == '/account/' %}active{% endif %}">Личный кабинет</a>
+                <a href="{% url 'account' %}" class="nav-link {% if request.path == '/account/' %}active{% endif %}">
+                    <i class="fas fa-user-circle"></i> {{ user.username|truncatechars:15 }}
+                </a>
+                <form action="{% url 'logout' %}" method="post" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-logout">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </form>
             {% else %}
-                <a href="{% url 'login' %}" class="nav-link {% if request.path == '/login/' %}active{% endif %}">Войти</a>
+                <a href="{% url 'login' %}" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Войти
+                </a>
+                <a href="{% url 'register' %}" class="btn btn-register">
+                    <i class="fas fa-user-plus"></i> Регистрация
+                </a>
             {% endif %}
-            <a href="{% url 'basket' %}" class="nav-link {% if request.path == '/basket/' %}active{% endif %}">Корзина</a>
+            <a href="{% url 'basket' %}" class="nav-link basket-link {% if request.path == '/basket/' %}active{% endif %}">
+                <i class="fas fa-shopping-cart"></i> Корзина
+                {% if user.is_authenticated %}
+                    {% with basket_count=user.basket.products.count %}
+                        {% if basket_count > 0 %}
+                        <span class="basket-count">{{ basket_count }}</span>
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
+            </a>
         </div>
     </nav>
 
     <!-- Основное содержимое -->
     <main class="container">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <div class="alert-content">
+                    {% if message.tags == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                    {% elif message.tags == 'error' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% elif message.tags == 'info' %}
+                        <i class="fas fa-info-circle"></i>
+                    {% else %}
+                        <i class="fas fa-bell"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                </div>
+                <button class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
         {% block content %}{% endblock %}
     </main>
+
+    <script>
+        // Автоматическое скрытие уведомлений через 5 секунд
+        setTimeout(function() {
+            var alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.style.display = 'none';
+                }, 300);
+            });
+        }, 5000);
+    </script>
 </body>
 </html>

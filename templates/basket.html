@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Корзина</h1>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1>Корзина</h1>
+        {% if products %}
+            <p style="color: var(--text-light); margin-top: 10px;">Количество товаров: {{ products|length }}</p>
+        {% endif %}
+    </div>
     
     {% if products %}
     <div class="product-list">
@@ -10,32 +15,94 @@
             {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
             {% else %}
-                <div class="product-image" style="background: #eee; display: flex; align-items: center; justify-content: center;">
-                    Нет изображения
+                <div class="product-image" style="background: linear-gradient(135deg, #4361ee, #4895ef); display: flex; align-items: center; justify-content: center; color: white;">
+                    <i class="fas fa-box" style="font-size: 3rem;"></i>
                 </div>
             {% endif %}
             
             <div class="product-info">
                 <h3 class="product-title">{{ product.title }}</h3>
-                <p class="product-price">{{ product.price }} ₽</p>
-                <form action="{% url 'remove_from_basket' %}" method="post">
+                <p class="product-price" style="font-size: 1.3rem;">{{ product.price }} ₽</p>
+                
+                {% if product.manufacturer.logo %}
+                    <div style="margin: 10px 0;">
+                        <img src="{{ product.manufacturer.logo.url }}" alt="{{ product.manufacturer.name }}" style="max-width: 100px; height: auto;">
+                    </div>
+                {% endif %}
+                
+                <form action="{% url 'remove_from_basket' %}" method="post" style="margin-top: 20px;">
                     {% csrf_token %}
                     <input type="hidden" name="product_id" value="{{ product.id }}">
-                    <button type="submit" class="btn" style="background: #dc3545;">Удалить</button>
+                    <button type="submit" class="btn" style="background: linear-gradient(90deg, #dc3545, #ff4757); width: 100%;">
+                        <i class="fas fa-trash-alt"></i> Удалить из корзины
+                    </button>
                 </form>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <div style="text-align: center; margin-top: 30px;">
-        <h2>Итого: {{ total_price }} ₽</h2>
-        <a href="{% url 'catalog' %}" class="btn" style="max-width: 300px; margin: 20px auto; display: inline-block;">Продолжить покупки</a>
+    <div style="text-align: center; margin-top: 50px; padding: 30px; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); max-width: 600px; margin-left: auto; margin-right: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0;">
+            <div style="text-align: left;">
+                <h3 style="color: var(--text-light); font-size: 1rem; margin-bottom: 5px;">Количество товаров</h3>
+                <p style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">{{ products|length }}</p>
+            </div>
+            <div style="text-align: right;">
+                <h3 style="color: var(--text-light); font-size: 1rem; margin-bottom: 5px;">Общая сумма</h3>
+                <p style="font-size: 2rem; font-weight: bold; color: var(--accent);">{{ total_price }} ₽</p>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px;">
+            <a href="{% url 'catalog' %}" class="btn" style="background: var(--primary); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-arrow-left"></i> Продолжить покупки
+            </a>
+            <button class="btn" style="background: linear-gradient(90deg, #28a745, #20c997); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fas fa-credit-card"></i> Оформить заказ
+            </button>
+        </div>
     </div>
     {% else %}
-    <div style="text-align: center; margin-top: 50px;">
-        <p>Ваша корзина пуста</p>
-        <a href="{% url 'catalog' %}" class="btn" style="max-width: 300px; margin: 20px auto;">Перейти в каталог</a>
+    <div style="text-align: center; margin-top: 80px; padding: 50px 20px;">
+        <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f0f0f0, #e0e0e0); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px;">
+            <i class="fas fa-shopping-cart" style="font-size: 3rem; color: var(--text-light);"></i>
+        </div>
+        
+        <h2 style="color: var(--text-light); margin-bottom: 20px;">Ваша корзина пуста</h2>
+        <p style="color: var(--text-light); margin-bottom: 30px; max-width: 500px; margin-left: auto; margin-right: auto;">
+            Добавьте товары из каталога, чтобы они появились здесь
+        </p>
+        
+        <a href="{% url 'catalog' %}" class="btn" style="background: var(--primary); padding: 15px 40px; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 10px; max-width: 300px; margin: 0 auto;">
+            <i class="fas fa-th-list"></i> Перейти в каталог
+        </a>
+        
+        <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid #eee; color: var(--text-light); font-size: 0.9rem;">
+            <p>Нужна помощь? <a href="#" style="color: var(--primary); text-decoration: none;">Посмотрите наши популярные товары</a></p>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if products %}
+    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: var(--radius); max-width: 800px; margin-left: auto; margin-right: auto;">
+        <h3 style="text-align: center; margin-bottom: 15px; color: var(--text);">
+            <i class="fas fa-info-circle" style="color: var(--accent); margin-right: 10px;"></i> Полезная информация
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; text-align: center;">
+            <div style="padding: 15px;">
+                <i class="fas fa-shipping-fast" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 10px;"></i>
+                <p style="font-size: 0.9rem; color: var(--text);">Бесплатная доставка от 5000 ₽</p>
+            </div>
+            <div style="padding: 15px;">
+                <i class="fas fa-shield-alt" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 10px;"></i>
+                <p style="font-size: 0.9rem; color: var(--text);">Гарантия на все товары</p>
+            </div>
+            <div style="padding: 15px;">
+                <i class="fas fa-undo" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 10px;"></i>
+                <p style="font-size: 0.9rem; color: var(--text);">Возврат в течение 14 дней</p>
+            </div>
+        </div>
     </div>
     {% endif %}
 {% endblock %}

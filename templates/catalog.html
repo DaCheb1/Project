@@ -1,25 +1,299 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Каталог товаров</h1>
+    <!-- Заголовок каталога -->
+    <div class="catalog-header">
+        <h1><i class="fas fa-th-list"></i> Каталог товаров</h1>
+        <p class="catalog-subtitle">
+            Найдено товаров: <span class="product-count">{{ products_count }}</span>
+            {% if total_count %}
+            из {{ total_count }}
+            {% endif %}
+        </p>
+    </div>
     
+    <!-- Панель поиска и фильтров -->
+    <div class="filter-panel">
+        <!-- Поисковая строка -->
+        <form method="get" action="{% url 'catalog' %}" class="search-form">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Поиск товаров по названию или описанию..." 
+                    value="{{ search_query }}"
+                    class="search-input"
+                    aria-label="Поиск товаров"
+                >
+                <button type="submit" class="search-btn">
+                    <i class="fas fa-search"></i> Найти товары
+                </button>
+                {% if search_query %}
+                <a href="{% url 'catalog' %}{% if selected_category %}?category={{ selected_category.id }}{% endif %}" class="clear-search">
+                    <i class="fas fa-times"></i> Очистить поиск
+                </a>
+                {% endif %}
+            </div>
+        </form>
+        
+        <div class="filter-section">
+            <!-- Фильтр по категориям -->
+            <div class="category-filter">
+                <h3><i class="fas fa-filter"></i> Фильтр по категориям</h3>
+                <div class="category-list">
+                    <a 
+                        href="{% url 'catalog' %}{% if search_query %}?search={{ search_query }}{% endif %}" 
+                        class="category-item {% if not selected_category %}active{% endif %}"
+                    >
+                        <span class="category-name">
+                            <i class="fas fa-th-large"></i> Все товары
+                        </span>
+                        <span class="category-count">{{ total_count|default:products_count }}</span>
+                    </a>
+                    
+                    {% for item in category_counts %}
+                    <a 
+                        href="{% url 'catalog' %}?category={{ item.category.id }}{% if search_query %}&search={{ search_query }}{% endif %}" 
+                        class="category-item {% if selected_category and selected_category.id == item.category.id %}active{% endif %}"
+                    >
+                        <span class="category-name">
+                            {% if item.category.title == "Смартфоны" %}
+                                <i class="fas fa-mobile-alt"></i>
+                            {% elif item.category.title == "Ноутбуки" %}
+                                <i class="fas fa-laptop"></i>
+                            {% elif item.category.title == "Наушники" %}
+                                <i class="fas fa-headphones"></i>
+                            {% elif item.category.title == "Телевизоры" %}
+                                <i class="fas fa-tv"></i>
+                            {% elif item.category.title == "Планшеты" %}
+                                <i class="fas fa-tablet-alt"></i>
+                            {% elif item.category.title == "Компьютеры" %}
+                                <i class="fas fa-desktop"></i>
+                            {% else %}
+                                <i class="fas fa-box"></i>
+                            {% endif %}
+                            {{ item.category.title }}
+                        </span>
+                        <span class="category-count">{{ item.count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Активная фильтрация -->
+            {% if selected_category or search_query %}
+            <div class="active-filters">
+                <h4><i class="fas fa-sliders-h"></i> Активные фильтры:</h4>
+                <div class="filter-tags">
+                    {% if selected_category %}
+                    <span class="filter-tag">
+                        <i class="fas fa-tag"></i> Категория: {{ selected_category.title }}
+                        <a href="{% url 'catalog' %}{% if search_query %}?search={{ search_query }}{% endif %}" class="remove-filter" title="Убрать фильтр">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </span>
+                    {% endif %}
+                    
+                    {% if search_query %}
+                    <span class="filter-tag">
+                        <i class="fas fa-search"></i> Поиск: "{{ search_query }}"
+                        <a href="{% url 'catalog' %}{% if selected_category %}?category={{ selected_category.id }}{% endif %}" class="remove-filter" title="Убрать фильтр">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </span>
+                    {% endif %}
+                    
+                    <a href="{% url 'catalog' %}" class="clear-all-filters">
+                        <i class="fas fa-broom"></i> Сбросить все фильтры
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Результаты поиска -->
+    {% if products %}
     <div class="product-list">
         {% for product in products %}
         <div class="product-card">
+            <div class="product-card-header">
+                <span class="product-category">{{ product.category.title }}</span>
+                <span class="product-id">#{{ product.id }}</span>
+            </div>
+            
             {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image">
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" class="product-image" loading="lazy">
             {% else %}
-                <div class="product-image" style="background: #eee; display: flex; align-items: center; justify-content: center;">
-                    Нет изображения
+                <div class="product-image placeholder">
+                    <i class="fas fa-box-open"></i>
+                    <span>Нет изображения</span>
                 </div>
             {% endif %}
             
             <div class="product-info">
                 <h3 class="product-title">{{ product.title }}</h3>
-                <p class="product-price">{{ product.price }} ₽</p>
-                <a href="{% url 'catalog_detail' product.id %}" class="btn">Подробнее</a>
+                
+                {% if product.desc %}
+                    {% if product.desc|length > 120 %}
+                    <p class="product-desc">{{ product.desc|slice:":120" }}...</p>
+                    {% else %}
+                    <p class="product-desc">{{ product.desc }}</p>
+                    {% endif %}
+                {% else %}
+                <p class="product-desc" style="color: var(--text-light); font-style: italic;">
+                    Описание отсутствует
+                </p>
+                {% endif %}
+                
+                <div class="product-footer">
+                    <div class="product-price-section">
+                        <p class="product-price">{{ product.price }}</p>
+                        {% if product.country %}
+                        <p style="color: var(--text-light); font-size: 0.9rem; margin-top: 8px;">
+                            <i class="fas fa-globe"></i> {{ product.country }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="product-actions">
+                        <a href="{% url 'catalog_detail' product.id %}" class="btn btn-details">
+                            <i class="fas fa-eye"></i> Подробнее
+                        </a>
+                        
+                        {% if user.is_authenticated %}
+                        <form action="{% url 'push_basket' %}" method="post" class="add-to-cart-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="product" value="{{ product.id }}">
+                            <button type="submit" class="btn btn-add-to-cart">
+                                <i class="fas fa-cart-plus"></i> В корзину
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-add-to-cart">
+                            <i class="fas fa-sign-in-alt"></i> Войдите для покупки
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
+    
+    <!-- Пустая страница результатов -->
+    {% else %}
+    <div class="no-results">
+        <div class="no-results-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <h2>Товары не найдены</h2>
+        <p>
+            {% if search_query %}
+            По запросу "{{ search_query }}" ничего не найдено.
+            {% elif selected_category %}
+            В категории "{{ selected_category.title }}" пока нет товаров.
+            {% else %}
+            В каталоге пока нет товаров.
+            {% endif %}
+            Попробуйте изменить параметры поиска или выбрать другую категорию.
+        </p>
+        <div class="no-results-actions">
+            <a href="{% url 'catalog' %}" class="btn btn-primary">
+                <i class="fas fa-th-list"></i> Показать все товары
+            </a>
+            <a href="#" class="btn btn-outline" onclick="document.querySelector('.search-input').focus(); return false;">
+                <i class="fas fa-search"></i> Новый поиск
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Быстрые категории (показываем если нет активных фильтров) -->
+    {% if not selected_category and not search_query and category_counts|length > 1 %}
+    <div class="quick-categories">
+        <h2><i class="fas fa-bolt"></i> Популярные категории</h2>
+        <div class="category-grid">
+            {% for item in category_counts|slice:":4" %}
+            <a href="{% url 'catalog' %}?category={{ item.category.id }}" class="quick-category-card">
+                <div class="quick-category-icon">
+                    {% if item.category.title == "Смартфоны" %}
+                        <i class="fas fa-mobile-alt"></i>
+                    {% elif item.category.title == "Ноутбуки" %}
+                        <i class="fas fa-laptop"></i>
+                    {% elif item.category.title == "Наушники" %}
+                        <i class="fas fa-headphones"></i>
+                    {% elif item.category.title == "Телевизоры" %}
+                        <i class="fas fa-tv"></i>
+                    {% else %}
+                        <i class="fas fa-microchip"></i>
+                    {% endif %}
+                </div>
+                <h3>{{ item.category.title }}</h3>
+                <p>{{ item.count }} товаров</p>
+                <span class="quick-category-link">
+                    Смотреть все <i class="fas fa-arrow-right"></i>
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Информация о производителях -->
+    {% if products and not search_query %}
+    <div class="mt-40 p-30 bg-light rounded shadow">
+        <h3 class="text-center mb-20 text-primary">
+            <i class="fas fa-industry"></i> Широкий выбор производителей
+        </h3>
+        <p class="text-center text-light" style="max-width: 800px; margin: 0 auto;">
+            В нашем каталоге представлена электроника от ведущих мировых производителей. 
+            Все товары имеют официальную гарантию и сертификаты качества.
+        </p>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Автофокус на поле поиска при нажатии Ctrl+F
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            document.querySelector('.search-input').focus();
+        }
+    });
+    
+    // Подсказки при поиске
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        searchInput.addEventListener('focus', function() {
+            this.style.boxShadow = '0 0 0 4px rgba(67, 97, 238, 0.2)';
+        });
+        
+        searchInput.addEventListener('blur', function() {
+            this.style.boxShadow = '';
+        });
+    }
+    
+    // Анимация добавления в корзину
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const button = this.querySelector('.btn-add-to-cart');
+            const originalText = button.innerHTML;
+            const originalWidth = button.offsetWidth;
+            
+            button.style.width = originalWidth + 'px';
+            button.innerHTML = '<i class="fas fa-check"></i> Добавлено!';
+            button.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = '';
+                button.style.width = '';
+            }, 2000);
+        });
+    });
+</script>
 {% endblock %}

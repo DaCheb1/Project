@@ -11,10 +11,11 @@
 <body>
     <!-- Навигационная панель -->
     <nav class="navbar">
-        <div class="logo">
+        <!-- Логотип теперь кликабельный -->
+        <a href="{% url 'index' %}" class="logo">
             <i class="fas fa-bolt"></i>
             <span>Магазин электроник</span>
-        </div>
+        </a>
         <div class="nav-links">
             <a href="{% url 'catalog' %}" class="nav-link {% if request.path == '/catalog/' %}active{% endif %}">
                 <i class="fas fa-th-list"></i> Каталог
@@ -88,6 +89,32 @@
                 }, 300);
             });
         }, 5000);
+        
+        // Эффект при наведении на логотип
+        document.querySelector('.logo').addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+        
+        document.querySelector('.logo').addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+        
+        // Плавный скролл для всех якорных ссылок
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -1258,3 +1258,41 @@ html {
 .text-xl { font-size: 1.4rem; }
 .text-2xl { font-size: 1.8rem; }
 .text-3xl { font-size: 2.2rem; }
+
+/* Стили для кликабельного логотипа */
+.logo {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    color: var(--accent);
+}
+
+.logo:active {
+    transform: scale(0.98);
+}
+
+.logo i {
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: all 0.3s ease;
+}
+
+.logo:hover i {
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}

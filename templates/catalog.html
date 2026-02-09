@@ -5,7 +5,7 @@
     <div class="catalog-header">
         <h1><i class="fas fa-th-list"></i> Каталог товаров</h1>
         <p class="catalog-subtitle">
-            Найдено товаров: <span class="product-count">{{ products_count }}</span>
+            Найдено товаров: <span class="product-count">{{ products|length }}</span>
             {% if total_count %}
             из {{ total_count }}
             {% endif %}
@@ -49,7 +49,7 @@
                         <span class="category-name">
                             <i class="fas fa-th-large"></i> Все товары
                         </span>
-                        <span class="category-count">{{ total_count|default:products_count }}</span>
+                        <span class="category-count">{{ total_count }}</span>
                     </a>
                     
                     {% for item in category_counts %}

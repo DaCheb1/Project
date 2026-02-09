@@ -52,7 +52,7 @@ def catalog(request):
         'category_counts': category_counts,
         'selected_category': selected_category,
         'search_query': search_query,
-        'products_count': products.count(),
+        'products_count': products.count(),  # ← ЭТО ВАЖНО! Добавлена эта строка
         'total_count': total_count,
     })
 

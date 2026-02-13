@@ -1,47 +1,810 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="account-card">
-        <div class="account-header">
-            <div class="user-avatar">
-                {{ user.username|first|upper }}
+<div class="account-wrapper">
+    <!-- Приветственный баннер -->
+    <div class="welcome-banner">
+        <div class="welcome-content">
+            <div class="user-avatar-large">
+                <i class="fas fa-user-circle"></i>
             </div>
-            <h1>Личный кабинет</h1>
-            <p style="color: var(--text-light); margin-top: 5px;">Добро пожаловать, {{ user.username }}!</p>
-        </div>
-        
-        <div class="user-info-grid">
-            <div class="info-item">
-                <label><i class="fas fa-user"></i> Логин</label>
-                <div class="value">{{ user.username }}</div>
-            </div>
-            
-            <div class="info-item">
-                <label><i class="fas fa-envelope"></i> Email</label>
-                <div class="value">{{ user.email|default:"Не указан" }}</div>
-            </div>
-            
-            <div class="info-item">
-                <label><i class="fas fa-user-plus"></i> Дата регистрации</label>
-                <div class="value">{{ user.date_joined|date:"d.m.Y H:i" }}</div>
-            </div>
-            
-            <div class="info-item">
-                <label><i class="fas fa-sign-in-alt"></i> Последний вход</label>
-                <div class="value">{{ user.last_login|date:"d.m.Y H:i"|default:"Еще не входил" }}</div>
+            <div class="welcome-text">
+                <h1>Добро пожаловать, {{ user.username }}!</h1>
+                <p><i class="fas fa-calendar-alt"></i> На сайте с {{ date_joined|date:"d.m.Y" }}</p>
             </div>
         </div>
-        
-        <div class="account-actions">
-            <a href="{% url 'basket' %}" class="btn" style="background: var(--primary);">
-                <i class="fas fa-shopping-cart"></i> Моя корзина
-            </a>
-            <form action="{% url 'logout' %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn-logout" style="padding: 12px 24px;">
-                    <i class="fas fa-sign-out-alt"></i> Выйти
-                </button>
-            </form>
+        <div class="banner-stats">
+            <div class="stat-item">
+                <span class="stat-value">{{ basket_count }}</span>
+                <span class="stat-label">Товаров в корзине</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ basket_total }} ₽</span>
+                <span class="stat-label">Сумма заказа</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">{{ user.last_login|date:"d.m.Y"|default:"Сегодня" }}</span>
+                <span class="stat-label">Последний визит</span>
+            </div>
         </div>
     </div>
+
+    <div class="account-grid">
+        <!-- Левая колонка - информация о пользователе -->
+        <div class="account-left">
+            <!-- Профиль пользователя -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <i class="fas fa-id-card"></i>
+                    <h2>Мой профиль</h2>
+                </div>
+                <div class="profile-info">
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-user"></i> Имя пользователя:</span>
+                        <span class="info-value">{{ user.username }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-envelope"></i> Email:</span>
+                        <span class="info-value">{{ user.email|default:"Не указан" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-calendar-check"></i> Дата регистрации:</span>
+                        <span class="info-value">{{ date_joined|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label"><i class="fas fa-clock"></i> Последний вход:</span>
+                        <span class="info-value">{{ last_login|date:"d.m.Y H:i"|default:"Еще не входил" }}</span>
+                    </div>
+                </div>
+                <div class="profile-actions">
+                    <button class="btn-edit-profile" onclick="alert('Функция в разработке!')">
+                        <i class="fas fa-edit"></i> Редактировать профиль
+                    </button>
+                </div>
+            </div>
+
+            <!-- Категории для быстрого перехода -->
+            <div class="categories-card">
+                <div class="card-header">
+                    <i class="fas fa-th-large"></i>
+                    <h2>Популярные категории</h2>
+                </div>
+                <div class="categories-list">
+                    {% for category in categories %}
+                    <a href="{% url 'catalog' %}?category={{ category.id }}" class="category-item">
+                        <div class="category-icon">
+                            {% if category.title == "Смартфоны" %}
+                                <i class="fas fa-mobile-alt"></i>
+                            {% elif category.title == "Ноутбуки" %}
+                                <i class="fas fa-laptop"></i>
+                            {% elif category.title == "Наушники" %}
+                                <i class="fas fa-headphones"></i>
+                            {% elif category.title == "Телевизоры" %}
+                                <i class="fas fa-tv"></i>
+                            {% else %}
+                                <i class="fas fa-microchip"></i>
+                            {% endif %}
+                        </div>
+                        <div class="category-info">
+                            <span class="category-name">{{ category.title }}</span>
+                            <span class="category-count">{{ category.product_count }} товаров</span>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {% empty %}
+                    <p class="empty-message">Категории пока не добавлены</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка - корзина и рекомендации -->
+        <div class="account-right">
+            <!-- Текущая корзина -->
+            <div class="basket-card">
+                <div class="card-header">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h2>Моя корзина</h2>
+                    {% if basket_count > 0 %}
+                    <span class="basket-badge">{{ basket_count }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if basket_products %}
+                <div class="basket-items">
+                    {% for product in recent_basket_products %}
+                    <div class="basket-item">
+                        <div class="item-image">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                            {% else %}
+                                <div class="no-image">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="item-details">
+                            <h3>{{ product.title|truncatechars:40 }}</h3>
+                            <p class="item-price">{{ product.price }} ₽</p>
+                        </div>
+                        <form action="{% url 'remove_from_basket' %}" method="post" class="remove-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="btn-remove" title="Удалить">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="basket-footer">
+                    <div class="basket-total">
+                        <span>Итого:</span>
+                        <strong>{{ basket_total }} ₽</strong>
+                    </div>
+                    <div class="basket-actions">
+                        <a href="{% url 'basket' %}" class="btn-view-cart">
+                            <i class="fas fa-eye"></i> Перейти в корзину
+                        </a>
+                        <button class="btn-checkout" onclick="alert('Функция оформления заказа в разработке!')">
+                            <i class="fas fa-credit-card"></i> Оформить заказ
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-basket">
+                    <div class="empty-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>Корзина пуста</h3>
+                    <p>Добавьте товары из каталога</p>
+                    <a href="{% url 'catalog' %}" class="btn-go-catalog">
+                        <i class="fas fa-th-list"></i> Перейти в каталог
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Рекомендуемые товары -->
+            {% if recommended_products %}
+            <div class="recommended-card">
+                <div class="card-header">
+                    <i class="fas fa-thumbs-up"></i>
+                    <h2>Рекомендуем для вас</h2>
+                </div>
+                <div class="recommended-grid">
+                    {% for product in recommended_products %}
+                    <a href="{% url 'catalog_detail' product.id %}" class="recommended-item">
+                        <div class="recommended-image">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                            {% else %}
+                                <div class="no-image">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="recommended-info">
+                            <h4>{{ product.title|truncatechars:30 }}</h4>
+                            <p class="recommended-price">{{ product.price }} ₽</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.account-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Приветственный баннер */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 20px;
+    padding: 30px 40px;
+    margin-bottom: 40px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    box-shadow: 0 15px 30px rgba(67, 97, 238, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none" opacity="0.1"><path d="M0,0 L100,0 L100,100 Z" fill="white"/></svg>');
+    background-size: cover;
+}
+
+.welcome-content {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    position: relative;
+    z-index: 1;
+}
+
+.user-avatar-large i {
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.welcome-text h1 {
+    font-size: 2.2rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.welcome-text p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.banner-stats {
+    display: flex;
+    gap: 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px 25px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    min-width: 140px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* Сетка аккаунта */
+.account-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 1024px) {
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Общие стили для карточек */
+.account-left,
+.account-right {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.profile-card,
+.categories-card,
+.basket-card,
+.recommended-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.profile-card:hover,
+.categories-card:hover,
+.basket-card:hover,
+.recommended-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    padding: 20px 25px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+}
+
+.card-header i {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.card-header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    flex: 1;
+}
+
+.basket-badge {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+/* Профиль */
+.profile-info {
+    padding: 25px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-label i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.info-value {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.profile-actions {
+    padding: 20px 25px;
+    background: #f8f9fa;
+    border-top: 1px solid #f0f0f0;
+}
+
+.btn-edit-profile {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-edit-profile:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
+}
+
+/* Категории */
+.categories-list {
+    padding: 15px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.category-item:last-child {
+    border-bottom: none;
+}
+
+.category-item:hover {
+    background: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.category-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+}
+
+.category-info {
+    flex: 1;
+}
+
+.category-name {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.category-count {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.category-item i {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.category-item:hover i {
+    transform: translateX(3px);
+    color: var(--primary);
+}
+
+/* Корзина */
+.basket-items {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.basket-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 25px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.3s ease;
+}
+
+.basket-item:hover {
+    background: #f8f9fa;
+}
+
+.item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.no-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-details h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+    color: var(--text);
+}
+
+.item-price {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.remove-form {
+    margin: 0;
+}
+
+.btn-remove {
+    width: 35px;
+    height: 35px;
+    border: none;
+    background: none;
+    color: var(--text-light);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-remove:hover {
+    background: #fee;
+    color: #dc3545;
+    transform: rotate(90deg);
+}
+
+.basket-footer {
+    padding: 20px 25px;
+    background: #f8f9fa;
+    border-top: 1px solid #f0f0f0;
+}
+
+.basket-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+}
+
+.basket-total strong {
+    font-size: 1.4rem;
+    color: var(--primary);
+}
+
+.basket-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.btn-view-cart,
+.btn-checkout {
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    border: none;
+    font-size: 0.95rem;
+}
+
+.btn-view-cart {
+    background: white;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    text-decoration: none;
+}
+
+.btn-view-cart:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-checkout {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+}
+
+.btn-checkout:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+}
+
+/* Пустая корзина */
+.empty-basket {
+    padding: 50px 30px;
+    text-align: center;
+}
+
+.empty-icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+}
+
+.empty-icon i {
+    font-size: 3rem;
+    color: var(--text-light);
+    opacity: 0.5;
+}
+
+.empty-basket h3 {
+    font-size: 1.5rem;
+    color: var(--text);
+    margin-bottom: 10px;
+}
+
+.empty-basket p {
+    color: var(--text-light);
+    margin-bottom: 25px;
+}
+
+.btn-go-catalog {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 30px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.btn-go-catalog:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
+}
+
+/* Рекомендации */
+.recommended-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.recommended-item {
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.3s ease;
+}
+
+.recommended-item:hover {
+    transform: translateY(-5px);
+}
+
+.recommended-image {
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.recommended-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recommended-info h4 {
+    font-size: 0.95rem;
+    margin-bottom: 5px;
+    color: var(--text);
+}
+
+.recommended-price {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .welcome-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 25px 20px;
+    }
+    
+    .welcome-content {
+        width: 100%;
+    }
+    
+    .banner-stats {
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .stat-item {
+        width: 100%;
+    }
+    
+    .basket-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .user-avatar-large i {
+        font-size: 3.5rem;
+    }
+    
+    .welcome-text h1 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .account-wrapper {
+        padding: 10px;
+    }
+    
+    .welcome-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .info-row {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .category-item {
+        padding: 12px;
+    }
+    
+    .recommended-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Анимация удаления товара
+document.querySelectorAll('.remove-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const item = this.closest('.basket-item');
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(100px)';
+        
+        setTimeout(() => {
+            this.submit();
+        }, 300);
+    });
+});
+
+// Подтверждение выхода (опционально)
+document.querySelector('.btn-logout')?.addEventListener('click', function(e) {
+    if (!confirm('Вы уверены, что хотите выйти?')) {
+        e.preventDefault();
+    }
+});
+</script>
 {% endblock %}

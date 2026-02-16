@@ -23,7 +23,7 @@
                 <span class="stat-label">Сумма заказа</span>
             </div>
             <div class="stat-item">
-                <span class="stat-value">{{ user.last_login|date:"d.m.Y"|default:"Сегодня" }}</span>
+                <span class="stat-value">{{ last_login|date:"d.m.Y"|default:"Сегодня" }}</span>
                 <span class="stat-label">Последний визит</span>
             </div>
         </div>
@@ -113,7 +113,8 @@
                 {% if basket_products %}
                 <div class="basket-items">
                     {% for product in recent_basket_products %}
-                    <div class="basket-item">
+                    <!-- ВСЯ КАРТОЧКА ТОВАРА КЛИКАБЕЛЬНАЯ -->
+                    <div class="basket-item" onclick="window.location.href='{% url 'catalog_detail' product.id %}'" style="cursor: pointer;">
                         <div class="item-image">
                             {% if product.image %}
                                 <img src="{{ product.image.url }}" alt="{{ product.title }}">
@@ -126,8 +127,10 @@
                         <div class="item-details">
                             <h3>{{ product.title|truncatechars:40 }}</h3>
                             <p class="item-price">{{ product.price }} ₽</p>
+                            <p class="item-category">{{ product.category.title|default:"Без категории" }}</p>
                         </div>
-                        <form action="{% url 'remove_from_basket' %}" method="post" class="remove-form">
+                        <!-- Форма удаления (не вызывает переход на товар) -->
+                        <form action="{% url 'remove_from_basket' %}" method="post" class="remove-form" onclick="event.stopPropagation();">
                             {% csrf_token %}
                             <input type="hidden" name="product_id" value="{{ product.id }}">
                             <button type="submit" class="btn-remove" title="Удалить">
@@ -175,6 +178,7 @@
                 </div>
                 <div class="recommended-grid">
                     {% for product in recommended_products %}
+                    <!-- Карточка рекомендации кликабельная -->
                     <a href="{% url 'catalog_detail' product.id %}" class="recommended-item">
                         <div class="recommended-image">
                             {% if product.image %}
@@ -506,23 +510,27 @@
 }
 
 .item-image {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     border-radius: 10px;
     overflow: hidden;
     flex-shrink: 0;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .item-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 5px;
 }
 
 .no-image {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -534,14 +542,22 @@
 }
 
 .item-details h3 {
-    font-size: 1rem;
+    font-size: 1.1rem;
     margin-bottom: 5px;
     color: var(--text);
+    font-weight: 600;
 }
 
 .item-price {
     font-weight: 700;
     color: var(--primary);
+    font-size: 1.2rem;
+    margin-bottom: 3px;
+}
+
+.item-category {
+    font-size: 0.85rem;
+    color: var(--text-light);
 }
 
 .remove-form {
@@ -549,8 +565,8 @@
 }
 
 .btn-remove {
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     border: none;
     background: none;
     color: var(--text-light);
@@ -683,7 +699,7 @@
 /* Рекомендации */
 .recommended-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     padding: 20px;
 }
@@ -705,18 +721,23 @@
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .recommended-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 10px;
 }
 
 .recommended-info h4 {
-    font-size: 0.95rem;
+    font-size: 1rem;
     margin-bottom: 5px;
     color: var(--text);
+    font-weight: 600;
 }
 
 .recommended-price {
@@ -774,8 +795,13 @@
         gap: 5px;
     }
     
-    .category-item {
-        padding: 12px;
+    .basket-item {
+        flex-wrap: wrap;
+    }
+    
+    .item-image {
+        width: 60px;
+        height: 60px;
     }
     
     .recommended-grid {
@@ -785,6 +811,13 @@
 </style>
 
 <script>
+// Предотвращаем всплытие клика для форм удаления
+document.querySelectorAll('.remove-form').forEach(form => {
+    form.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+});
+
 // Анимация удаления товара
 document.querySelectorAll('.remove-form').forEach(form => {
     form.addEventListener('submit', function(e) {
@@ -800,7 +833,7 @@ document.querySelectorAll('.remove-form').forEach(form => {
     });
 });
 
-// Подтверждение выхода (опционально)
+// Подтверждение выхода
 document.querySelector('.btn-logout')?.addEventListener('click', function(e) {
     if (!confirm('Вы уверены, что хотите выйти?')) {
         e.preventDefault();

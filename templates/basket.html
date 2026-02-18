@@ -4,13 +4,13 @@
 <div class="basket-container">
     <h1 class="basket-title"><i class="fas fa-shopping-cart"></i> Корзина</h1>
     
-    {% if products %}
+    {% if items %}
     <div class="basket-grid">
-        {% for product in products %}
-        <div class="basket-item-card" onclick="window.location.href='{% url 'catalog_detail' product.id %}'" style="cursor: pointer;">
+        {% for item in items %}
+        <div class="basket-item-card" onclick="window.location.href='{% url 'catalog_detail' item.product.id %}'" style="cursor: pointer;">
             <div class="basket-item-image">
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}">
                 {% else %}
                     <div class="no-image">
                         <i class="fas fa-box"></i>
@@ -19,17 +19,28 @@
             </div>
             
             <div class="basket-item-info">
-                <h3 class="basket-item-title">{{ product.title }}</h3>
-                <p class="basket-item-price">{{ product.price }} ₽</p>
+                <h3 class="basket-item-title">{{ item.product.title }}</h3>
+                <p class="basket-item-price">{{ item.product.price }} ₽ x {{ item.quantity }}</p>
+                <p class="basket-item-total">Итого: <strong>{{ item.get_total_price }} ₽</strong></p>
                 <p class="basket-item-category">
-                    <i class="fas fa-tag"></i> {{ product.category.title|default:"Без категории" }}
+                    <i class="fas fa-tag"></i> {{ item.product.category.title|default:"Без категории" }}
                 </p>
             </div>
             
             <div class="basket-item-actions" onclick="event.stopPropagation();">
+                <form action="{% url 'update_basket_quantity' %}" method="post" class="quantity-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                    <div class="quantity-controls">
+                        <button type="submit" name="action" value="decrease" class="quantity-btn">-</button>
+                        <span class="quantity">{{ item.quantity }}</span>
+                        <button type="submit" name="action" value="increase" class="quantity-btn">+</button>
+                    </div>
+                </form>
+                
                 <form action="{% url 'remove_from_basket' %}" method="post" class="remove-form">
                     {% csrf_token %}
-                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
                     <button type="submit" class="btn-remove" title="Удалить">
                         <i class="fas fa-trash-alt"></i> Удалить
                     </button>
@@ -158,10 +169,19 @@
 }
 
 .basket-item-price {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--primary);
+    font-size: 1.1rem;
+    color: var(--text);
     margin-bottom: 5px;
+}
+
+.basket-item-total {
+    font-size: 1.1rem;
+    margin-top: 5px;
+    color: var(--text);
+}
+
+.basket-item-total strong {
+    color: var(--primary);
 }
 
 .basket-item-category {
@@ -174,6 +194,42 @@
 
 .basket-item-actions {
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.quantity-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border);
+    background: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.quantity-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.quantity {
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
 }
 
 .remove-form {
@@ -181,7 +237,7 @@
 }
 
 .btn-remove {
-    padding: 10px 20px;
+    padding: 8px 15px;
     background: #fee;
     color: #dc3545;
     border: 1px solid #ffcdd2;
@@ -192,6 +248,8 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s ease;
+    width: 100%;
+    justify-content: center;
 }
 
 .btn-remove:hover {
@@ -342,8 +400,8 @@
 </style>
 
 <script>
-// Предотвращаем всплытие клика для форм удаления
-document.querySelectorAll('.remove-form').forEach(form => {
+// Предотвращаем всплытие клика для форм
+document.querySelectorAll('.quantity-form, .remove-form').forEach(form => {
     form.addEventListener('click', function(e) {
         e.stopPropagation();
     });

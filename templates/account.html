@@ -110,14 +110,14 @@
                     {% endif %}
                 </div>
                 
-                {% if basket_products %}
+                {% if recent_items %}
                 <div class="basket-items">
-                    {% for product in recent_basket_products %}
+                    {% for item in recent_items %}
                     <!-- ВСЯ КАРТОЧКА ТОВАРА КЛИКАБЕЛЬНАЯ -->
-                    <div class="basket-item" onclick="window.location.href='{% url 'catalog_detail' product.id %}'" style="cursor: pointer;">
+                    <div class="basket-item" onclick="window.location.href='{% url 'catalog_detail' item.product.id %}'" style="cursor: pointer;">
                         <div class="item-image">
-                            {% if product.image %}
-                                <img src="{{ product.image.url }}" alt="{{ product.title }}">
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}">
                             {% else %}
                                 <div class="no-image">
                                     <i class="fas fa-box"></i>
@@ -125,14 +125,15 @@
                             {% endif %}
                         </div>
                         <div class="item-details">
-                            <h3>{{ product.title|truncatechars:40 }}</h3>
-                            <p class="item-price">{{ product.price }} ₽</p>
-                            <p class="item-category">{{ product.category.title|default:"Без категории" }}</p>
+                            <h3>{{ item.product.title|truncatechars:40 }}</h3>
+                            <p class="item-price">{{ item.product.price }} ₽ x {{ item.quantity }}</p>
+                            <p class="item-total">Итого: <strong>{{ item.get_total_price }} ₽</strong></p>
+                            <p class="item-category">{{ item.product.category.title|default:"Без категории" }}</p>
                         </div>
                         <!-- Форма удаления (не вызывает переход на товар) -->
                         <form action="{% url 'remove_from_basket' %}" method="post" class="remove-form" onclick="event.stopPropagation();">
                             {% csrf_token %}
-                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
                             <button type="submit" class="btn-remove" title="Удалить">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -551,8 +552,18 @@
 .item-price {
     font-weight: 700;
     color: var(--primary);
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     margin-bottom: 3px;
+}
+
+.item-total {
+    font-size: 0.95rem;
+    color: var(--text);
+    margin-bottom: 3px;
+}
+
+.item-total strong {
+    color: var(--primary);
 }
 
 .item-category {
@@ -778,6 +789,19 @@
     .welcome-text h1 {
         font-size: 1.8rem;
     }
+    
+    .basket-item {
+        flex-wrap: wrap;
+    }
+    
+    .item-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .recommended-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 480px) {
@@ -793,19 +817,6 @@
     .info-row {
         flex-direction: column;
         gap: 5px;
-    }
-    
-    .basket-item {
-        flex-wrap: wrap;
-    }
-    
-    .item-image {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .recommended-grid {
-        grid-template-columns: 1fr;
     }
 }
 </style>
@@ -831,13 +842,6 @@ document.querySelectorAll('.remove-form').forEach(form => {
             this.submit();
         }, 300);
     });
-});
-
-// Подтверждение выхода
-document.querySelector('.btn-logout')?.addEventListener('click', function(e) {
-    if (!confirm('Вы уверены, что хотите выйти?')) {
-        e.preventDefault();
-    }
 });
 </script>
 {% endblock %}

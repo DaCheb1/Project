@@ -3,7 +3,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from products.models import Basket, Product
+from products.models import Basket, Product, Category
 from django.db.models import Count
 
 def register(request):
@@ -35,8 +35,6 @@ def login_view(request):
                 login(request, user)
                 messages.success(request, f'👋 С возвращением, {username}!')
                 return redirect('catalog')
-            else:
-                messages.error(request, '❌ Не удалось выполнить вход')
         else:
             messages.error(request, '❌ Неверное имя пользователя или пароль')
     else:
@@ -53,30 +51,31 @@ def logout_view(request):
 def account(request):
     # Получаем корзину пользователя
     basket, created = Basket.objects.get_or_create(user=request.user)
-    basket_products = basket.products.all()
+    
+    # Получаем товары из корзины через related_name 'items'
+    basket_items = basket.items.all()
     
     # Статистика корзины
-    basket_count = basket_products.count()
-    basket_total = sum(product.price for product in basket_products)
+    basket_count = basket.get_total_count()
+    basket_total = basket.get_total_price()
     
-    # Получаем 5 последних добавленных товаров в корзину (уже срез)
-    recent_basket_products = basket_products.order_by('-id')[:5]
+    # Получаем товары для отображения (последние 5)
+    recent_items = basket_items.order_by('-added_at')[:5]
     
     # Получаем все категории для отображения
-    from products.models import Category
     categories = Category.objects.annotate(
         product_count=Count('products')
     ).filter(product_count__gt=0)[:6]
     
-    # ПРОСТОЕ РЕШЕНИЕ: просто показываем последние добавленные товары в магазин
-    recommended_products = Product.objects.order_by('-id')[:4]
+    # Рекомендуемые товары
+    recommended_products = Product.objects.order_by('-created_at')[:4]
     
     return render(request, 'account.html', {
         'user': request.user,
         'basket_count': basket_count,
         'basket_total': basket_total,
-        'basket_products': basket_products,
-        'recent_basket_products': recent_basket_products,
+        'basket_items': basket_items,
+        'recent_items': recent_items,
         'categories': categories,
         'recommended_products': recommended_products,
         'date_joined': request.user.date_joined,

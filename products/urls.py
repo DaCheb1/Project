@@ -7,4 +7,5 @@ urlpatterns = [
     path('pushbasket/', views.push_basket, name='push_basket'),
     path('basket/', views.basket, name='basket'),
     path('basket/remove/', views.remove_from_basket, name='remove_from_basket'),
+    path('basket/update/', views.update_basket_quantity, name='update_basket_quantity'),
 ]

@@ -114,7 +114,7 @@
                 <div class="basket-items">
                     {% for item in recent_items %}
                     <!-- ВСЯ КАРТОЧКА ТОВАРА КЛИКАБЕЛЬНАЯ -->
-                    <div class="basket-item" onclick="window.location.href='{% url 'catalog_detail' item.product.id %}'" style="cursor: pointer;">
+                    <div class="basket-item" data-product-url="{% url 'catalog_detail' item.product.id %}" style="cursor: pointer;">
                         <div class="item-image">
                             {% if item.product.image %}
                                 <img src="{{ item.product.image.url }}" alt="{{ item.product.title }}">

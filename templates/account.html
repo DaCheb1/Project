@@ -44,10 +44,6 @@
                         <span class="info-value">{{ user.username }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label"><i class="fas fa-envelope"></i> Email:</span>
-                        <span class="info-value">{{ user.email|default:"Не указан" }}</span>
-                    </div>
-                    <div class="info-row">
                         <span class="info-label"><i class="fas fa-calendar-check"></i> Дата регистрации:</span>
                         <span class="info-value">{{ date_joined|date:"d.m.Y" }}</span>
                     </div>
@@ -55,11 +51,6 @@
                         <span class="info-label"><i class="fas fa-clock"></i> Последний вход:</span>
                         <span class="info-value">{{ last_login|date:"d.m.Y H:i"|default:"Еще не входил" }}</span>
                     </div>
-                </div>
-                <div class="profile-actions">
-                    <button class="btn-edit-profile" onclick="alert('Функция в разработке!')">
-                        <i class="fas fa-edit"></i> Редактировать профиль
-                    </button>
                 </div>
             </div>
 
@@ -130,7 +121,7 @@
                             <p class="item-total">Итого: <strong>{{ item.get_total_price }} ₽</strong></p>
                             <p class="item-category">{{ item.product.category.title|default:"Без категории" }}</p>
                         </div>
-                        <!-- Форма удаления (не вызывает переход на товар) -->
+                        <!-- Форма удаления -->
                         <form action="{% url 'remove_from_basket' %}" method="post" class="remove-form" onclick="event.stopPropagation();">
                             {% csrf_token %}
                             <input type="hidden" name="item_id" value="{{ item.id }}">
@@ -396,35 +387,6 @@
 .info-value {
     font-weight: 600;
     color: var(--text);
-}
-
-.profile-actions {
-    padding: 20px 25px;
-    background: #f8f9fa;
-    border-top: 1px solid #f0f0f0;
-}
-
-.btn-edit-profile {
-    width: 100%;
-    padding: 12px;
-    background: white;
-    border: 2px solid var(--primary);
-    color: var(--primary);
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-}
-
-.btn-edit-profile:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.2);
 }
 
 /* Категории */
@@ -822,10 +784,15 @@
 </style>
 
 <script>
-// Предотвращаем всплытие клика для форм удаления
-document.querySelectorAll('.remove-form').forEach(form => {
-    form.addEventListener('click', function(e) {
-        e.stopPropagation();
+// Кликабельные товары в корзине
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.basket-item[data-product-url]').forEach(item => {
+        item.addEventListener('click', function(e) {
+            // Не переходим, если клик был по форме удаления
+            if (!e.target.closest('.remove-form')) {
+                window.location.href = this.dataset.productUrl;
+            }
+        });
     });
 });
 

@@ -545,15 +545,16 @@ body {
 }
 
 .product-desc {
-  color: var(--text-light);
-  margin-bottom: 25px;
-  font-size: 1rem;
-  line-height: 1.6;
-  flex: 1;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+    color: var(--text-light);
+    margin-bottom: 25px;
+    font-size: 1rem;
+    line-height: 1.6;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-clamp: 3; /* Стандартное свойство */
 }
 
 .product-footer {

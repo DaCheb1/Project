@@ -52,15 +52,12 @@ def account(request):
     # Получаем корзину пользователя
     basket, created = Basket.objects.get_or_create(user=request.user)
     
-    # Получаем товары из корзины через related_name 'items'
-    basket_items = basket.items.all()
-    
     # Статистика корзины
     basket_count = basket.get_total_count()
     basket_total = basket.get_total_price()
     
     # Получаем товары для отображения (последние 5)
-    recent_items = basket_items.order_by('-added_at')[:5]
+    recent_items = basket.items.order_by('-added_at')[:5]
     
     # Получаем все категории для отображения
     categories = Category.objects.annotate(
@@ -74,7 +71,6 @@ def account(request):
         'user': request.user,
         'basket_count': basket_count,
         'basket_total': basket_total,
-        'basket_items': basket_items,
         'recent_items': recent_items,
         'categories': categories,
         'recommended_products': recommended_products,

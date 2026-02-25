@@ -66,7 +66,6 @@
                 {% endif %}
             </div>
 
-
             <!-- Кнопка входа -->
             <button type="submit" class="auth-button">
                 <i class="fas fa-sign-in-alt"></i> Войти
@@ -275,53 +274,6 @@
     }
 }
 
-.login-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
-    padding: 5px 0;
-}
-
-.remember-me {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text);
-    font-size: 0.95rem;
-    cursor: pointer;
-    padding: 8px 15px;
-    border-radius: 30px;
-    transition: background 0.3s ease;
-}
-
-.remember-me:hover {
-    background: #f8f9fa;
-}
-
-.remember-me input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: var(--primary);
-}
-
-.forgot-password {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    padding: 8px 15px;
-    border-radius: 30px;
-}
-
-.forgot-password:hover {
-    background: #f8f9fa;
-    color: var(--accent);
-    transform: translateX(-3px);
-}
-
 /* Кнопка отправки */
 .auth-button {
     background: linear-gradient(135deg, var(--primary), var(--accent));
@@ -443,12 +395,6 @@
     .auth-button {
         padding: 16px;
         font-size: 1.1rem;
-    }
-    
-    .login-options {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
     }
 }
 

@@ -11,25 +11,25 @@
 <body>
     <!-- Навигационная панель -->
     <nav class="navbar">
-        <!-- Логотип ведет на главную (main приложение) -->
+        <!-- Логотип ведет на главную -->
         <a href="{% url 'index' %}" class="logo">
             <i class="fas fa-bolt"></i>
             <span>Магазин электроник</span>
         </a>
         
         <div class="nav-links">
-            <!-- Каталог (products приложение) -->
+            <!-- Каталог -->
             <a href="{% url 'catalog' %}" class="nav-link {% if request.path == '/products/catalog/' %}active{% endif %}">
                 <i class="fas fa-th-list"></i> Каталог
             </a>
             
             {% if user.is_authenticated %}
-                <!-- Личный кабинет (user приложение) -->
+                <!-- Личный кабинет -->
                 <a href="{% url 'account' %}" class="nav-link {% if request.path == '/user/account/' %}active{% endif %}">
                     <i class="fas fa-user-circle"></i> {{ user.username|truncatechars:15 }}
                 </a>
                 
-                <!-- Выход (user приложение) -->
+                <!-- Выход -->
                 <form action="{% url 'logout' %}" method="post" class="logout-form">
                     {% csrf_token %}
                     <button type="submit" class="btn-logout">
@@ -37,22 +37,22 @@
                     </button>
                 </form>
             {% else %}
-                <!-- Вход (user приложение) -->
+                <!-- Вход -->
                 <a href="{% url 'login' %}" class="btn btn-login">
                     <i class="fas fa-sign-in-alt"></i> Войти
                 </a>
                 
-                <!-- Регистрация (user приложение) -->
+                <!-- Регистрация -->
                 <a href="{% url 'register' %}" class="btn btn-register">
                     <i class="fas fa-user-plus"></i> Регистрация
                 </a>
             {% endif %}
             
-            <!-- Корзина (products приложение) -->
+            <!-- Корзина - ИСПРАВЛЕНО -->
             <a href="{% url 'basket' %}" class="nav-link basket-link {% if request.path == '/products/basket/' %}active{% endif %}">
                 <i class="fas fa-shopping-cart"></i> Корзина
                 {% if user.is_authenticated %}
-                    {% with basket_count=user.basket.products.count %}
+                    {% with basket_count=user.basket.get_total_count %}
                         {% if basket_count > 0 %}
                         <span class="basket-count">{{ basket_count }}</span>
                         {% endif %}
@@ -89,7 +89,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Футер (дополнительно, для красоты) -->
+    <!-- Футер -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
